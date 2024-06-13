@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://nova-bnpz.onrender.com/api/v1",
+        target: "https://vercel.com/vaishnavi-nagrales-projects/nova-api/api/v1",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
