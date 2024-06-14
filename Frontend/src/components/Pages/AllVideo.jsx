@@ -3,10 +3,11 @@ import VideoCard from "../Cards/VideoCard";
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { ColorRing } from 'react-loader-spinner';
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function AllVideo() {
   const fetchData = async () => {
-    const res = await axios.get("/api/videos");
+    const res = await axios.get(`${SERVER_URL}/videos`);
     return res.data;
   }
 

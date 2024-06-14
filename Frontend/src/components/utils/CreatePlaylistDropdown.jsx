@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function CreatePlaylistDropdown({ videoId }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,9 +16,9 @@ function CreatePlaylistDropdown({ videoId }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('/api/users/current-user');
+        const res = await axios.get(`${SERVER_URL}/users/current-user`);
         const userId = res.data.data._id;
-        const response = await axios.get(`/api/playlists/user/${userId}`);
+        const response = await axios.get(`${SERVER_URL}/playlists/user/${userId}`);
         setUserPlaylists(response.data.data);
       } catch (error) {
         console.error('Error fetching user playlists:', error);
@@ -47,7 +48,7 @@ function CreatePlaylistDropdown({ videoId }) {
 
   const createPlaylist = async () => {
     try {
-      const response = await axios.post('/api/playlists', { name, description });
+      const response = await axios.post(`${SERVER_URL}/playlists`, { name, description });
       setSuccessMessage(response.data.message);
       setTimeout(() => {
         setSuccessMessage('');
@@ -76,8 +77,8 @@ function CreatePlaylistDropdown({ videoId }) {
   const handleAddRemoveVideoToPlaylist = async (playlistId, isChecked) => {
     try {
       const url = isChecked
-        ? `/api/playlists/add/${videoId}/${playlistId}`
-        : `/api/playlists/remove/${videoId}/${playlistId}`;
+        ? `${SERVER_URL}/playlists/add/${videoId}/${playlistId}`
+        : `${SERVER_URL}/playlists/remove/${videoId}/${playlistId}`;
       await axios.patch(url);
       setSuccessMessage(isChecked ? 'Video added to playlist successfully' : 'Video removed from playlist successfully');
       setTimeout(() => {

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { ColorRing } from 'react-loader-spinner';
 import VideoCard from '../Cards/VideoCard';
 import CreatePlaylistDropdown from '../utils/CreatePlaylistDropdown';
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function VideoDetail() {
   const { videoId } = useParams();
@@ -12,7 +13,7 @@ function VideoDetail() {
 
   // Fetch video details
   const fetchDataVideoDetails = async () => {
-    const res = await axios.get(`/api/videos/${videoId}`);
+    const res = await axios.get(`${SERVER_URL}/videos/${videoId}`);
     return res.data;
   };
   const {
@@ -28,7 +29,7 @@ function VideoDetail() {
 
   // Fetch all videos
   const fetchDataAllVideos = async () => {
-    const res = await axios.get('/api/videos');
+    const res = await axios.get(`${SERVER_URL}/videos`);
     return res.data;
   };
   const {
@@ -43,7 +44,7 @@ function VideoDetail() {
 
   // Fetch all comments
     const fetchDataAllComments = async () => {
-    const res = await axios.get(`/api/comments/${videoId}`);
+    const res = await axios.get(`${SERVER_URL}/comments/${videoId}`);
     return res.data;
     };
     const {

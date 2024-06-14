@@ -1,10 +1,11 @@
 import React from "react";
 import axios from "axios";
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function ChannelVideoCard({ video , isOwner}) {
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/channel/videos/${video._id}`);
+      await axios.delete(`${SERVER_URL}/channel/videos/${video._id}`);
       alert("Video deleted successfully");
     } catch (error) {
       console.error("Error deleting video:", error);
@@ -13,7 +14,7 @@ function ChannelVideoCard({ video , isOwner}) {
 
   const handleTogglePublish = async () => {
     try {
-      await axios.patch(`/api/channel/videos/toggle/publish/${video._id}`);
+      await axios.patch(`${SERVER_URL}/channel/videos/toggle/publish/${video._id}`);
       alert("Video publish status toggled");
     } catch (error) {
       console.error("Error toggling publish status:", error);

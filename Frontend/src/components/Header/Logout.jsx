@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../../store/authSlice';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function Logout() {
   const authStatus = useSelector(state => state.auth.status);
@@ -13,7 +14,7 @@ function Logout() {
   const {mutate, isPending, error, isError} = useMutation(
     {
       mutationFn: async  () => {
-        const response =  await axios.post("/api/users/logout");
+        const response =  await axios.post(`${SERVER_URL}/users/logout`);
         return response.data;
       },
       onSuccess: (data) => {

@@ -3,6 +3,8 @@ import axios from "axios";
 import VideoCard from "../VideoCard";
 import { ColorRing } from "react-loader-spinner";
 
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
+
 function AddVideo() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -19,7 +21,7 @@ function AddVideo() {
   const fetchVideos = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/videos/getowner");
+      const response = await axios.get(`${SERVER_URL}/videos/getowner`);
       setVideos(response.data.data.videos || []);
     } catch (error) {
       console.error("Error fetching videos:", error);
@@ -39,7 +41,7 @@ function AddVideo() {
     formData.append("thumbnail", thumbnail);
 
     try {
-      await axios.post("/api/videos", formData);
+      await axios.post(`${SERVER_URL}/videos`, formData);
       alert("Video uploaded successfully");
       setTitle("");
       setDescription("");
@@ -64,7 +66,7 @@ function AddVideo() {
     }
 
     try {
-      await axios.patch(`/api/videos/${selectedVideo._id}`, formData);
+      await axios.patch(`${SERVER_URL}/videos/${selectedVideo._id}`, formData);
       alert("Video updated successfully");
       setTitle("");
       setDescription("");
@@ -82,7 +84,7 @@ function AddVideo() {
   const handleVideoDelete = async (videoId) => {
     try {
       setLoading(true);
-      await axios.delete(`/api/videos/${videoId}`);
+      await axios.delete(`${SERVER_URL}/videos/${videoId}`);
       alert("Video deleted successfully");
       fetchVideos();
     } catch (error) {
@@ -95,7 +97,7 @@ function AddVideo() {
   const handleTogglePublish = async (videoId) => {
     try {
       setLoading(true);
-      await axios.patch(`/api/videos/toggle/publish/${videoId}`);
+      await axios.patch(`${SERVER_URL}/videos/toggle/publish/${videoId}`);
       alert("Video publish status toggled");
       fetchVideos();
     } catch (error) {

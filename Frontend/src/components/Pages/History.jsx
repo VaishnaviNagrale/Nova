@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import VideoCard from '../Cards/VideoCard';
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function History() {
   const [watchHistory, setWatchHistory] = useState([]);
@@ -8,7 +9,7 @@ function History() {
   useEffect(() => {
     const fetchWatchHistory = async () => {
       try {
-        const res = await axios.get('/api/users/history');
+        const res = await axios.get(`${SERVER_URL}/users/history`);
         setWatchHistory(res.data.data);
       } catch (error) {
         console.error('Error fetching watch history:', error);

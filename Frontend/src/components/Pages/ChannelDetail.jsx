@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import ChannelVideos from "../Cards/Tabs/ChannelVideos";
 import About from "../Cards/Tabs/About";
 import AddVideo from "../Cards/Tabs/AddVideo";
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function ChannelDetail() {
   const { channelId } = useParams();
@@ -18,13 +19,13 @@ function ChannelDetail() {
 
   useEffect(() => {
     const validation = async () => {
-      const response = await axios.get('/api/users/current-user');
+      const response = await axios.get(`${SERVER_URL}/users/current-user`);
       const { _id } = response.data.data;
       setCurrUser(_id);
     };
     const fetchChannelDetails = async () => {
       try {
-        const res = await axios.get(`/api/channel/${channelId}`);
+        const res = await axios.get(`${SERVER_URL}/channel/${channelId}`);
         setChannelDetails(res.data.data);
         setChannelOwner(res.data.data._id);
       } catch (error) {
@@ -33,7 +34,7 @@ function ChannelDetail() {
     };
     const fetchChannelStats = async () => {
       try {
-        const res = await axios.get(`/api/channel/${channelId}/stats`);
+        const res = await axios.get(`${SERVER_URL}/channel/${channelId}/stats`);
         setChannelStats(res.data.data);
         // console.log("Channel stats:", res.data.data);
       } catch (error) {
@@ -42,7 +43,7 @@ function ChannelDetail() {
     };
     const fetchChannelVideos = async () => {
       try {
-        const res = await axios.get(`/api/channel/${channelId}/videos`);
+        const res = await axios.get(`${SERVER_URL}/channel/${channelId}/videos`);
         setChannelVideos(res.data.data);
         // console.log("Channel videos:", res.data.data);
       } catch (error) {

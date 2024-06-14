@@ -2,11 +2,12 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { login } from '../../store/authSlice.js';
 import { toast } from 'react-toastify';
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 export const useLoginMutation = (dispatch, navigate) => {
   return useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post("/api/users/login", data, {
+      const response = await axios.post(`${SERVER_URL}/users/login`, data, {
         headers: {
           "Content-Type": "Application/json",
         },
