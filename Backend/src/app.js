@@ -6,10 +6,7 @@ import cookieparser from "cookie-parser" // this is used to parse the cookies
 const app = express()
 
 //middlewares : this is a function that runs before the request is handled
-app.use(cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true
-}))
+app.use(cors())
 
 // this is used to parse the incoming request body
 app.use(express.json({

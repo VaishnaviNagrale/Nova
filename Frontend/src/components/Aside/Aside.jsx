@@ -1,57 +1,118 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   FaHome,
-  FaThumbsUp,
   FaHistory,
   FaVideo,
   FaFolder,
   FaPersonBooth,
   FaQuestionCircle,
   FaCogs,
+  FaBars,
+  FaTimes,
 } from 'react-icons/fa';
+
+const navItems = [
+  { path: '/home', icon: FaHome, label: 'Home' },
+  { path: '/history', icon: FaHistory, label: 'History' },
+  { path: '/my-content', icon: FaVideo, label: 'My Content' },
+  { path: '/collections', icon: FaFolder, label: 'Playlists' },
+  { path: '/subscribers', icon: FaPersonBooth, label: 'Subscriptions' },
+  { path: '/support', icon: FaQuestionCircle, label: 'Support' },
+  { path: '/settings', icon: FaCogs, label: 'Settings' },
+];
 
 function Aside() {
   const navigate = useNavigate();
+  const authStatus = useSelector((state) => state.auth.authStatus);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleNavigation = (path) => {
     navigate(path);
+    setMobileOpen(false); // close drawer on mobile after click
   };
-  const authStatus = useSelector((state) => state.auth.authStatus);
-
-  const navItems = [
-    { path: '/home', icon: FaHome, label: 'Home' },
-    { path: '/liked-videos', icon: FaThumbsUp, label: 'Liked Videos' },
-    { path: '/history', icon: FaHistory, label: 'History' },
-    { path: '/my-content', icon: FaVideo, label: 'My Content' },
-    { path: '/collections', icon: FaFolder, label: 'Collections' },
-    { path: '/subscribers', icon: FaPersonBooth, label: 'Subscribers'},
-    { path: '/support', icon: FaQuestionCircle, label: 'Support' },
-    { path: '/settings', icon: FaCogs, label: 'Settings' },
-  ];
 
   return (
-    <aside className="group inset-x-0 bottom-0 z-40 w-full shrink-0 border-t border-white bg-[#121212] px-2 py-2 sm:absolute sm:inset-y-0 sm:max-w-[70px] sm:border-r sm:border-t-0 sm:py-6 sm:hover:max-w-[250px] lg:sticky lg:max-w-[250px]">
-      <ul className="flex justify-around gap-y-2 sm:sticky sm:top-[106px] sm:min-h-[calc(100vh-130px)] sm:flex-col">
-        {navItems.map(
-          ({ path, icon: Icon, label, authRequired }) =>
-            (!authRequired || (authRequired && authStatus)) && (
-              <li key={path} className={authRequired ? 'hidden sm:block' : ''}>
+    <>
+      {/* Sidebar for Desktop/Tablet */}
+      <aside
+        className={`z-40 sm:block h-screen bg-[#121212] text-white border-r border-gray-700 transition-all duration-300
+        ${isCollapsed ? 'w-[70px]' : 'w-[250px]'}`}
+      >
+        {/* Toggle button */}
+        <div className="flex justify-start px-5 py-6">
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-white hover:text-[#ae7aff]"
+          >
+            <FaBars size={24} className="cursor-pointer" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <ul className="flex flex-col gap-2 px-2">
+          {navItems.map(({ path, icon: Icon, label, authRequired }) => {
+            if (authRequired && !authStatus) return null;
+            return (
+              <li key={path}>
                 <button
-                  className="flex flex-col items-center justify-center border-white py-1 focus:text-[#ae7aff] sm:w-full sm:flex-row sm:border sm:p-1.5 sm:hover:bg-[#ae7aff] sm:hover:text-black sm:focus:border-[#ae7aff] sm:focus:bg-[#ae7aff] sm:focus:text-black sm:group-hover:justify-start sm:group-hover:px-4 lg:justify-start lg:px-4"
                   onClick={() => handleNavigation(path)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#ae7aff] hover:text-black
+                  transition text-sm ${isCollapsed ? 'flex-col justify-center gap-1' : 'flex-row justify-start'}`}
                 >
-                  <span className="inline-block w-5 shrink-0 sm:group-hover:mr-4 lg:mr-4">
-                    <Icon size={20} />
+                  <Icon size={20} />
+                  <span className={`${isCollapsed ? 'text-[10px]' : 'inline'}`}>
+                    {label}
                   </span>
-                  <span className="block sm:hidden sm:group-hover:inline lg:inline">{label}</span>
                 </button>
               </li>
-            )
-        )}
-      </ul>
-    </aside>
+            );
+          })}
+        </ul>
+      </aside>
+
+      {/* Mobile Menu Button */}
+      <div className="sm:hidden fixed top-4 left-4 z-50">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="bg-[#121212] p-2 rounded-full text-white shadow"
+        >
+          <FaBars />
+        </button>
+      </div>
+
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="sm:hidden fixed inset-0 z-40 bg-black bg-opacity-60">
+          <div className="absolute left-0 top-0 h-full w-[250px] bg-[#121212] text-white shadow-lg">
+            <div className="flex justify-between items-center p-4">
+              <span className="text-lg font-semibold">Menu</span>
+              <button onClick={() => setMobileOpen(false)} className="text-white">
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <ul className="flex flex-col gap-2 px-2">
+              {navItems.map(({ path, icon: Icon, label, authRequired }) => {
+                if (authRequired && !authStatus) return null;
+                return (
+                  <li key={path}>
+                    <button
+                      onClick={() => handleNavigation(path)}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#ae7aff] hover:text-black transition text-sm"
+                    >
+                      <Icon size={20} />
+                      <span>{label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

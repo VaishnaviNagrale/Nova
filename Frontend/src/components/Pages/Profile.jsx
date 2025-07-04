@@ -19,7 +19,7 @@ function Profile() {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const res = await axios.get('/api/users/current-user');
+        const res = await axios.get('/api/v1/users/current-user');
         setUser(res.data.data);
         setFullName(res.data.data.fullName);
         setEmail(res.data.data.email);
@@ -35,7 +35,7 @@ function Profile() {
 
   const handleUpdateAccount = async () => {
     try {
-      const res = await axios.patch('/api/users/update-account', { fullName, email });
+      const res = await axios.patch('/api/v1/users/update-account', { fullName, email });
       console.log(res.data.message);
     } catch (error) {
       console.error('Error updating account:', error);
@@ -44,7 +44,7 @@ function Profile() {
 
   const handleChangePassword = async () => {
     try {
-      const res = await axios.post('/api/users/change-password', { oldPassword, newPassword });
+      const res = await axios.post('/api/v1/users/change-password', { oldPassword, newPassword });
       console.log(res.data.message);
     } catch (error) {
       console.error('Error changing password:', error);
@@ -68,7 +68,7 @@ function Profile() {
       setLoadingAvatar(true);
       const formData = new FormData();
       formData.append('avatar', avatarImage);
-      const res = await axios.patch('/api/users/avatar', formData, {
+      const res = await axios.patch('/api/v1/users/avatar', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -87,7 +87,7 @@ function Profile() {
       setLoadingCover(true);
       const formData = new FormData();
       formData.append('coverImage', coverImage);
-      const res = await axios.patch('/api/users/cover-image', formData, {
+      const res = await axios.patch('/api/v1/users/cover-image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

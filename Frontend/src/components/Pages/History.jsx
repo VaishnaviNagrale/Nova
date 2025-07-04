@@ -8,7 +8,7 @@ function History() {
   useEffect(() => {
     const fetchWatchHistory = async () => {
       try {
-        const res = await axios.get('/api/users/history');
+        const res = await axios.get('/api/v1/users/history');
         setWatchHistory(res.data.data);
       } catch (error) {
         console.error('Error fetching watch history:', error);

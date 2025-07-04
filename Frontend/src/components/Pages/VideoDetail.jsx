@@ -12,7 +12,7 @@ function VideoDetail() {
 
   // Fetch video details
   const fetchDataVideoDetails = async () => {
-    const res = await axios.get(`/api/videos/${videoId}`);
+    const res = await axios.get(`/api/v1/videos/${videoId}`);
     return res.data;
   };
   const {
@@ -28,7 +28,7 @@ function VideoDetail() {
 
   // Fetch all videos
   const fetchDataAllVideos = async () => {
-    const res = await axios.get('/api/videos');
+    const res = await axios.get('/api/v1/videos');
     return res.data;
   };
   const {
@@ -43,7 +43,7 @@ function VideoDetail() {
 
   // Fetch all comments
     const fetchDataAllComments = async () => {
-    const res = await axios.get(`/api/comments/${videoId}`);
+    const res = await axios.get(`/api/v1/comments/${videoId}`);
     return res.data;
     };
     const {

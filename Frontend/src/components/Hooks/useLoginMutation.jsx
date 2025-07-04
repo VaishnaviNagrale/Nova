@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 export const useLoginMutation = (dispatch, navigate) => {
   return useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post("/api/users/login", data, {
+      const response = await axios.post("/api/v1/users/login", data, {
         headers: {
           "Content-Type": "Application/json",
         },

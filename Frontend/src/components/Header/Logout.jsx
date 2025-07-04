@@ -13,7 +13,7 @@ function Logout() {
   const {mutate, isPending, error, isError} = useMutation(
     {
       mutationFn: async  () => {
-        const response =  await axios.post("/api/users/logout");
+        const response =  await axios.post("/api/v1/users/logout");
         return response.data;
       },
       onSuccess: (data) => {

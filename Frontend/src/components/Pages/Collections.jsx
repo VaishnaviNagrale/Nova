@@ -13,9 +13,9 @@ function Collections() {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const res = await axios.get('/api/users/current-user');
+        const res = await axios.get('/api/v1/users/current-user');
         const userId = res.data.data._id;
-        const response = await axios.get(`/api/playlists/user/${userId}`);
+        const response = await axios.get(`/api/v1/playlists/user/${userId}`);
         setPlaylists(response.data.data);
       } catch (error) {
         setError('Error fetching playlists');
@@ -27,7 +27,7 @@ function Collections() {
 
   const handleDeletePlaylist = async (playlistId) => {
     try {
-      await axios.delete(`/api/playlists/${playlistId}`);
+      await axios.delete(`/api/v1/playlists/${playlistId}`);
       setPlaylists(playlists.filter(playlist => playlist._id !== playlistId));
       setSuccessMessage('Playlist deleted successfully');
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -45,7 +45,7 @@ function Collections() {
 
   const handleUpdatePlaylist = async () => {
     try {
-      const updatedPlaylist = await axios.patch(`/api/playlists/${editPlaylist}`, { name, description });
+      const updatedPlaylist = await axios.patch(`/api/v1/playlists/${editPlaylist}`, { name, description });
       setPlaylists(playlists.map(p => (p._id === editPlaylist ? updatedPlaylist.data.data : p)));
       setEditPlaylist(null);
       setName('');

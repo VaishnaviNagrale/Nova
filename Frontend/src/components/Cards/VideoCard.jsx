@@ -1,101 +1,139 @@
 import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const VideoCard = ({_id,videoFile, thumbnail, title, description, views, createdAt, owner }) => {
+const VideoCard = ({
+  _id,
+  videoFile,
+  thumbnail,
+  title,
+  description,
+  views,
+  createdAt,
+  owner,
+  isYouTube
+}) => {
   const videoRef = useRef(null);
   const navigate = useNavigate();
-  // console.log(owner?.avatar);
 
-  const formatDateDifference = useMemo(() => {
-    return (dateString) => {
-      const now = new Date();
-      const uploadedDate = new Date(dateString);
-      const diffInSeconds = Math.floor((now - uploadedDate) / 1000);
-      const years = Math.floor(diffInSeconds / 31536000);
-      if (years > 0) {
-        return `${years} year${years > 1 ? 's' : ''} ago`;
-      }
-      const months = Math.floor(diffInSeconds / 2592000);
-      if (months > 0) {
-        return `${months} month${months > 1 ? 's' : ''} ago`;
-      }
-      const weeks = Math.floor(diffInSeconds / 604800);
-      if (weeks > 0) {
-        return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
-      }
-      const days = Math.floor(diffInSeconds / 86400);
-      if (days > 0) {
-        return `${days} day${days > 1 ? 's' : ''} ago`;
-      }
-      const hours = Math.floor(diffInSeconds / 3600);
-      if (hours > 0) {
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-      }
-      const minutes = Math.floor(diffInSeconds / 60);
-      if (minutes > 0) {
-        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-      }
-      return 'Just now';
-    };
+  const videoLink = isYouTube
+    ? `https://www.youtube.com/watch?v=${_id}`
+    : `/video/${_id}`;
+
+  const formatDateDifference = useCallback((dateString) => {
+    if (!dateString) return 'Unknown date';
+    const now = new Date();
+    const uploadedDate = new Date(dateString);
+    const diff = Math.floor((now - uploadedDate) / 1000);
+
+    const units = [
+      { label: 'year', seconds: 31536000 },
+      { label: 'month', seconds: 2592000 },
+      { label: 'week', seconds: 604800 },
+      { label: 'day', seconds: 86400 },
+      { label: 'hour', seconds: 3600 },
+      { label: 'minute', seconds: 60 },
+    ];
+
+    for (const unit of units) {
+      const value = Math.floor(diff / unit.seconds);
+      if (value > 0) return `${value} ${unit.label}${value > 1 ? 's' : ''} ago`;
+    }
+
+    return 'Just now';
+  }, []);
+
+  const formatViewsCount = useCallback((count) => {
+    const num = Number(count);
+    if (isNaN(num) || num < 0) return 'N/A';
+    if (num >= 1e12) return `${(num / 1e12).toFixed(1)}T`;
+    if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
+    if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
+    if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`;
+    return num.toString();
   }, []);
 
   const handleVideoPlay = useCallback(() => {
     const videos = document.querySelectorAll('video');
     videos.forEach((video) => {
-      if (video !== videoRef.current) {
-        video.pause();
-      }
+      if (video !== videoRef.current) video.pause();
     });
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
-    video.addEventListener('play', handleVideoPlay);
-    return () => {
-      video.removeEventListener('play', handleVideoPlay);
-    };
-  }, [handleVideoPlay]);
+    if (!isYouTube && video) {
+      video.addEventListener('play', handleVideoPlay);
+      return () => video.removeEventListener('play', handleVideoPlay);
+    }
+  }, [handleVideoPlay, isYouTube]);
 
-  const formattedDate = formatDateDifference(createdAt);
-
-  const handleVideoClick = () => {
-    navigate(`/video/${_id}`);
+  const handleCardClick = () => {
+    isYouTube ? window.open(videoLink, '_blank') : navigate(videoLink);
   };
 
   return (
-    <div className="container grid w-11/12 rounded-lg" onClick={handleVideoClick}>
-      <div className="text-white max-w-full w-full">
-        <video
-          ref={videoRef}
-          poster={thumbnail || 'default_thumbnail.jpg'}
-          src={videoFile || 'default_video.mp4'}
-          controls
-          className="w-full aspect-video object-cover rounded-2xl"
-          onClick={(e) => e.stopPropagation()}
-          muted={false}
-        >
-          <track kind="captions" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <div className="grid p-2 grid-cols-[auto,1fr]">
-        <div className="w-fit p-1.5 h-fit">
-          <img
+    <div
+      className="container w-11/12 rounded-lg shadow hover:shadow-lg transition duration-200 cursor-pointer overflow-hidden"
+      onClick={handleCardClick}
+    >
+      <div className="text-white w-full">
+        {!isYouTube ? (
+          <video
+            ref={videoRef}
+            poster={thumbnail || 'default_thumbnail.jpg'}
+            src={videoFile || 'default_video.mp4'}
+            controls
+            muted
+            className="w-full aspect-video object-cover rounded-t-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <track kind="captions" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <iframe
+            title={title}
+            src={`https://www.youtube.com/embed/${_id}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
             loading="lazy"
-            src={owner?.avatar || 'default_avatar.png'}
-            alt="Avatar"
-            className="w-10 h-10 object-cover rounded-full max-md:w-8 max-md:h-8"
+            className="w-full aspect-video object-cover rounded-t-2xl"
           />
-        </div>
-        <div className="flex flex-col justify-end">
-          <div className="flex-1 text-ellipsis overflow-hidden font-semibold">{title || 'Untitled'}</div>
-          <div className="text-gray-500">{owner?.username || 'Unknown'}</div>
-          <div className="flex items-center gap-1 text-gray-500">
-            <div>{views} views</div>
-            <div>•</div>
-            <div>{formattedDate}</div>
-          </div>
-          {/* <p className="text-gray-500">{description || 'No description'}</p> */}
+
+
+        )}
+      </div>
+
+      <div className="grid p-3 grid-cols-[auto,1fr] gap-3 bg-[#111] rounded-b-2xl">
+        {/* Avatar */}
+        <img
+          src={owner?.avatar || 'default_avatar.png'}
+          alt={owner?.username || 'User Avatar'}
+          className="w-10 h-10 object-cover rounded-full"
+          loading="lazy"
+        />
+
+        {/* Video Info */}
+        <div className="flex flex-col justify-start overflow-hidden">
+          <h3
+            className="text-white font-semibold text-base truncate"
+            title={title}
+          >
+            {title || 'Untitled'}
+          </h3>
+
+          <span
+            className="text-sm text-gray-400 truncate"
+            title={owner?.username}
+          >
+            {owner?.username || (isYouTube ? 'YouTube Creator' : 'Unknown')}
+          </span>
+
+          <span className="text-sm text-gray-500 flex gap-1">
+            {formatViewsCount(views)} views
+            <span>•</span>
+            {formatDateDifference(createdAt)}
+          </span>
         </div>
       </div>
     </div>
