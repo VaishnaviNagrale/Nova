@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
 function MyContent() {
   const [channelProfile, setChannelProfile] = useState({});
@@ -8,9 +7,9 @@ function MyContent() {
   useEffect(() => {
     const fetchChannelProfile = async () => {
       try {
-        const response = await axios.get(`${SERVER_URL}/users/current-user`);
+        const response = await axios.get('/api/v1/users/current-user');
         const { username } = response.data.data;
-        const res = await axios.get(`${SERVER_URL}/users/c/${username}`);
+        const res = await axios.get(`/api/v1/users/c/${username}`);
         setChannelProfile(res.data.data);
       } catch (error) {
         console.error('Error fetching channel profile:', error);

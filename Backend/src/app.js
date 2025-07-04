@@ -5,21 +5,8 @@ import cookieparser from "cookie-parser" // this is used to parse the cookies
 //app decleration
 const app = express()
 
-const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173'];
-
 //middlewares : this is a function that runs before the request is handled
-app.use(cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin like mobile apps or curl requests
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = `The CORS policy for this site does not allow access from the specified origin: ${origin}`;
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-    credentials: true
-  }));
+app.use(cors())
 
 // this is used to parse the incoming request body
 app.use(express.json({

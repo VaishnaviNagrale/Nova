@@ -19,6 +19,7 @@ import MyContent from './components/Pages/MyContent.jsx'
 import History from './components/Pages/History.jsx'
 import Collections from './components/Pages/Collections.jsx'
 import Support from './components/Pages/Support.jsx'
+import Search from './components/Header/Search.jsx'
 
 const queryClient = new QueryClient();
 
@@ -66,12 +67,12 @@ const router = createBrowserRouter([
         exact: true,
         index: true,
       },
-      {
-        path: "/liked-videos",
-        element: <AllVideo />,
-        exact: true,
-        index: true,
-      },
+      // {
+      //   path: "/liked-videos",
+      //   element: <AllVideo />,
+      //   exact: true,
+      //   index: true,
+      // },
       {
         path: "/history",
         element: <History />,
