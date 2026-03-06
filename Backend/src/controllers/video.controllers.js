@@ -115,77 +115,48 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const getAllVideosOwner = asyncHandler(async (req, res) => {
-  // TODO: get all videos based on query, sort, pagination
+
+  const userId = req.user._id;   // 👈 logged in user
+
   const {
     page = 1,
     limit = 10,
     query = "",
     sortBy = "createdAt",
-    sortType = 1,
-    userId,
+    sortType = -1,
   } = req.query;
 
-  // Define the match condition to filter videos with isPublished set to true
   const matchCondition = {
-    $and: [
-      {
-        $or: [
-          { title: { $regex: query, $options: "i" } },
-          { description: { $regex: query, $options: "i" } },
-        ],
-      },
-      // { isPublished: true }, // Only select videos that are published
+    owner: new mongoose.Types.ObjectId(userId), // 👈 important fix
+    $or: [
+      { title: { $regex: query, $options: "i" } },
+      { description: { $regex: query, $options: "i" } },
     ],
   };
 
-  if (userId) {
-    matchCondition.owner = new mongoose.Types.ObjectId(userId);
-  }
-
-  var videoAggregate;
-  try {
-    videoAggregate = Video.aggregate([
-      {
-        $match: matchCondition,
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "owner",
-          foreignField: "_id",
-          as: "owner",
-          pipeline: [
-            {
-              $project: {
-                _id: 1,
-                fullName: 1,
-                avatar: "$avatar",
-                username: 1,
-              },
+  const videoAggregate = Video.aggregate([
+    { $match: matchCondition },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              fullName: 1,
+              avatar: 1,
+              username: 1,
             },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          owner: {
-            $first: "$owner",
           },
-        },
+        ],
       },
-      {
-        $sort: {
-          [sortBy || "createdAt"]: sortType || 1,
-        },
-      },
-    ]);
-  } catch (error) {
-    console.error("Error in aggregation:", error);
-    throw new ApiError(
-      500,
-      error.message || "Internal server error in video aggregation"
-    );
-  }
+    },
+    { $addFields: { owner: { $first: "$owner" } } },
+    { $sort: { [sortBy]: sortType } },
+  ]);
 
   const options = {
     page,
@@ -194,29 +165,13 @@ const getAllVideosOwner = asyncHandler(async (req, res) => {
       totalDocs: "totalVideos",
       docs: "videos",
     },
-    skip: (page - 1) * limit,
-    limit: parseInt(limit),
   };
 
-  Video.aggregatePaginate(videoAggregate, options)
-    .then((result) => {
-      if (result?.videos?.length === 0 && userId) {
-        return res
-          .status(200)
-          .json(new ApiResponse(200, [], "No videos found"));
-      }
+  const result = await Video.aggregatePaginate(videoAggregate, options);
 
-      return res
-        .status(200)
-        .json(new ApiResponse(200, result, "video fetched successfully"));
-    })
-    .catch((error) => {
-      console.log("error ::", error);
-      throw new ApiError(
-        500,
-        error?.message || "Internal server error in video aggregate Paginate"
-      );
-    });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result, "Owner videos fetched successfully"));
 });
 
 const getVideoById = asyncHandler(async (req, res) => {

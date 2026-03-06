@@ -6,7 +6,8 @@ import Search from './Search';
 
 function Header() {
   const navigate = useNavigate();
-  const authStatus = useSelector((state) => state.auth.status);
+  const { token } = useSelector((state) => state.auth);
+  const authStatus = !!token;
 
   return (
     <header className="w-full border-b border-gray-700 bg-black text-white px-4 py-2">

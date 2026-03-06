@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import VideoCard from '../Cards/VideoCard';
 import axios from 'axios';
+import apiClient from '../utils/apiClient';
 
 function Collections() {
   const [playlists, setPlaylists] = useState([]);
@@ -13,9 +14,9 @@ function Collections() {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const res = await axios.get('/api/v1/users/current-user');
+        const res = await apiClient.get(`/api/v1/users/current-user`);
         const userId = res.data.data._id;
-        const response = await axios.get(`/api/v1/playlists/user/${userId}`);
+        const response = await apiClient.get(`/api/v1/playlists/user/${userId}`);
         setPlaylists(response.data.data);
       } catch (error) {
         setError('Error fetching playlists');
@@ -27,7 +28,7 @@ function Collections() {
 
   const handleDeletePlaylist = async (playlistId) => {
     try {
-      await axios.delete(`/api/v1/playlists/${playlistId}`);
+      await apiClient.delete(`/api/v1/playlists/${playlistId}`);
       setPlaylists(playlists.filter(playlist => playlist._id !== playlistId));
       setSuccessMessage('Playlist deleted successfully');
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -45,7 +46,7 @@ function Collections() {
 
   const handleUpdatePlaylist = async () => {
     try {
-      const updatedPlaylist = await axios.patch(`/api/v1/playlists/${editPlaylist}`, { name, description });
+      const updatedPlaylist = await apiClient.patch(`/api/v1/playlists/${editPlaylist}`, { name, description });
       setPlaylists(playlists.map(p => (p._id === editPlaylist ? updatedPlaylist.data.data : p)));
       setEditPlaylist(null);
       setName('');

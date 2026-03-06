@@ -5,95 +5,38 @@ import axios from 'axios';
 import { ColorRing } from 'react-loader-spinner';
 import VideoCard from '../Cards/VideoCard';
 import CreatePlaylistDropdown from '../utils/CreatePlaylistDropdown';
+import apiClient from '../utils/apiClient';
 
 function VideoDetail() {
   const { videoId } = useParams();
   const videoRef = useRef(null);
 
-  // Fetch video details
-  const fetchDataVideoDetails = async () => {
-    const res = await axios.get(`/api/v1/videos/${videoId}`);
-    return res.data;
-  };
-  const {
-    data: videoDetailsData,
-    isLoading: isLoadingVideoDetails,
-    isError: isErrorVideoDetails,
-    error: errorVideoDetails
-  } = useQuery({
-    queryKey: ['videoDetails', videoId],
-    queryFn: fetchDataVideoDetails,
-    enabled: !!videoId,  // only run the query if videoId is not null or undefined
-  });
-
-  // Fetch all videos
-  const fetchDataAllVideos = async () => {
-    const res = await axios.get('/api/v1/videos');
-    return res.data;
-  };
-  const {
-    data: videoData,
-    isLoading: isLoadingAllVideos,
-    isError: isErrorAllVideos,
-    error: errorAllVideos
-  } = useQuery({
-    queryKey: ['videos'],
-    queryFn: fetchDataAllVideos,
-  });
-
-  // Fetch all comments
-    const fetchDataAllComments = async () => {
-    const res = await axios.get(`/api/v1/comments/${videoId}`);
-    return res.data;
-    };
-    const {
-    data: commentData,
-    isLoading: isLoadingAllComments,
-    isError: isErrorAllComments,
-    error: errorAllComments
-    } = useQuery({
-    queryKey: ['comments', videoId],
-    queryFn: fetchDataAllComments,
-    enabled: !!videoId,
-    });
-
-  const videos = videoData?.data?.videos || [];
-  const videoDetails = videoDetailsData?.data || {};
-  const comments = commentData?.data?.comments || [];
-  // console.log('comments', comments);
-//   console.log('videoDetails', videoDetails);
-
-  if (isLoadingVideoDetails || isLoadingAllVideos) {
-    return (
-      <div className="flex justify-center items-center w-full h-screen">
-        <ColorRing color="#dad7cd" height={80} width={80} />
-      </div>
-    );
-  }
-  if (isErrorVideoDetails || isErrorAllVideos) {
-    const errorMessage = errorVideoDetails?.message || errorAllVideos?.message || 'An error occurred';
-    return (
-      <div className="flex justify-center items-center w-full h-screen">
-        Error: {errorMessage}
-      </div>
-    );
-  }
   const handleVideoPlay = useCallback(() => {
     const videos = document.querySelectorAll('video');
     videos.forEach((video) => {
+      if (!video) return;
       if (video !== videoRef.current) {
         video.pause();
       }
     });
   }, []);
-  useEffect(() => {
+
+    useEffect(() => {
     const video = videoRef.current;
+    if (!video) return;
     video.addEventListener('play', handleVideoPlay);
     return () => {
       video.removeEventListener('play', handleVideoPlay);
     };
   }, [handleVideoPlay]);
-  const formatDateDifference = useMemo(() => {
+
+  // Fetch video details
+  const fetchDataVideoDetails = async () => {
+    const res = await apiClient.get(`/api/v1/videos/${videoId}`);
+    return res.data;
+  };
+
+    const formatDateDifference = useMemo(() => {
     return (dateString) => {
       const now = new Date();
       const uploadedDate = new Date(dateString);
@@ -125,7 +68,78 @@ function VideoDetail() {
       return 'Just now';
     };
   }, []);
-  const formattedDate = formatDateDifference(videoDetails.createdAt);
+
+   // Fetch all videos
+  const fetchDataAllVideos = async () => {
+    const res = await apiClient.get(`/api/v1/videos`);
+    return res.data;
+  };
+
+  const {
+    data: videoData,
+    isLoading: isLoadingAllVideos,
+    isError: isErrorAllVideos,
+    error: errorAllVideos
+  } = useQuery({
+    queryKey: ['videos'],
+    queryFn: fetchDataAllVideos,
+  });
+
+   const {
+    data: videoDetailsData,
+    isLoading: isLoadingVideoDetails,
+    isError: isErrorVideoDetails,
+    error: errorVideoDetails
+  } = useQuery({
+    queryKey: ['videoDetails', videoId],
+    queryFn: fetchDataVideoDetails,
+    enabled: !!videoId,  // only run the query if videoId is not null or undefined
+  });
+
+   // Fetch all comments
+    const fetchDataAllComments = async () => {
+    const res = await apiClient.get(`/api/v1/comments/${videoId}`);
+    return res.data;
+    };
+  
+    const {
+    data: commentData,
+    isLoading: isLoadingAllComments,
+    isError: isErrorAllComments,
+    error: errorAllComments
+    } = useQuery({
+    queryKey: ['comments', videoId],
+    queryFn: fetchDataAllComments,
+    enabled: !!videoId,
+    });
+
+  const videos = videoData?.data?.videos || [];
+  const videoDetails = videoDetailsData?.data || {};
+  const comments = commentData?.data?.comments || [];
+  const formattedDate = videoDetails?.createdAt
+  ? formatDateDifference(videoDetails.createdAt)
+  : "";
+
+
+  // console.log('comments', comments);
+//   console.log('videoDetails', videoDetails);
+
+  if (isLoadingVideoDetails || isLoadingAllVideos) {
+    return (
+      <div className="flex justify-center items-center w-full h-screen">
+        <ColorRing color="#dad7cd" height={80} width={80} />
+      </div>
+    );
+  }
+  if (isErrorVideoDetails || isErrorAllVideos) {
+    const errorMessage = errorVideoDetails?.message || errorAllVideos?.message || 'An error occurred';
+    return (
+      <div className="flex justify-center items-center w-full h-screen">
+        Error: {errorMessage}
+      </div>
+    );
+  }
+
   // console.log(videoDetails.owner[0].owner);
   return (
     <section className="w-full pb-[70px] sm:ml-[70px] sm:pb-0">

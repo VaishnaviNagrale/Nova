@@ -20,6 +20,16 @@ import History from './components/Pages/History.jsx'
 import Collections from './components/Pages/Collections.jsx'
 import Support from './components/Pages/Support.jsx'
 import Search from './components/Header/Search.jsx'
+import ComingSoon from './components/Pages/ComingSoon.jsx'
+import axios from "axios";
+
+const token = localStorage.getItem("accessToken");
+
+if (token) {
+  axios.defaults.headers.common[
+    "Authorization"
+  ] = `Bearer ${token}`;
+}
 
 const queryClient = new QueryClient();
 
@@ -93,7 +103,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/subscribers",
-        element: <AllVideo />,
+        element: <ComingSoon />,
         exact: true,
         index: true,
       },
@@ -120,6 +130,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ToastContainer />
     </Provider>
   </QueryClientProvider>
-
-
 )

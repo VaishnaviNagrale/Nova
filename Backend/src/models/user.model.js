@@ -44,6 +44,14 @@ const userSchema = mongoose.Schema({
     },
     refreshToken: {
         type: String,
+    },
+    loginAttempts: {
+    type: Number,
+    default: 0
+    },
+    lockUntil: {
+    type: Date,
+    default: null
     }
 }, { timestamps: true });
 

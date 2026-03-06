@@ -1,12 +1,20 @@
 import express from "express" // this is used to create the server
 import cors from "cors" // this is used to allow the frontend to access the backend
 import cookieparser from "cookie-parser" // this is used to parse the cookies
+import helmet from "helmet";
 
 //app decleration
 const app = express()
 
 //middlewares : this is a function that runs before the request is handled
-app.use(cors())
+app.use(
+  cors({
+    origin: process.env.APP_URL,
+    credentials: true
+  })
+);
+
+app.use(helmet())
 
 // this is used to parse the incoming request body
 app.use(express.json({
@@ -34,6 +42,7 @@ import dashboardRouter from "./routes/dashboard.routes.js"
 import { ApiResponse } from "./utils/ApiResponse.js";
 import supportRouter from "./routes/support.routes.js";
 import channelRouter from "./routes/channel.routes.js";
+import ytsearchRouter from "./routes/youtube.routes.js"
 
 
 
@@ -48,6 +57,8 @@ app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/dashboard", dashboardRouter)
 app.use("/api/v1/support", supportRouter);
 app.use("/api/v1/channel", channelRouter);
+app.use("/api/v1/youtube",ytsearchRouter);
+// app.use("/api/v1/livestream", );
 
 
 // error handler

@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 import axios from "axios"
 import { toast } from "react-toastify"
-
+import apiClient from "../utils/apiClient"
 
 export const useSignupMutation = (navigate) => {
     return useMutation({
         mutationFn: async (data) => {
-            const response = await axios.post("/api/v1/users/register", data, {
+            const response = await apiClient.post(`/api/v1/users/register`, data, {
              headers :  {
                 "Content-Type": "multipart/form-data",
               },

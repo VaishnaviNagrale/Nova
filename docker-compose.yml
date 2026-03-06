@@ -1,34 +1,29 @@
+version: "3.8"
+
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    container_name: frontend
     ports:
-      - "5173:5173"
+      - "5173:80"
     networks:
       - fyt
+    depends_on:
+      - backend
 
   backend:
     build: ./backend
+    container_name: backend
     ports:
       - "8000:8000"
     networks:
       - fyt
-    depends_on:
-      - mongodb
-    
-  mongodb:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - fyt
+    env_file:
+      - ./backend/.env
 
 networks:
-    fyt:
-      driver: bridge
-  
-volumes:
-  mongodb_data:
-    driver: local
-  
+  fyt:
+    driver: bridge

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import apiClient from './apiClient';
 
 function CreatePlaylistDropdown({ videoId }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,9 +16,9 @@ function CreatePlaylistDropdown({ videoId }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('/api/v1/users/current-user');
+        const res = await apiClient.get(`/api/v1/users/current-user`);
         const userId = res.data.data._id;
-        const response = await axios.get(`/api/v1/playlists/user/${userId}`);
+        const response = await apiClient.get(`/api/v1/playlists/user/${userId}`);
         setUserPlaylists(response.data.data);
       } catch (error) {
         console.error('Error fetching user playlists:', error);
@@ -47,7 +48,7 @@ function CreatePlaylistDropdown({ videoId }) {
 
   const createPlaylist = async () => {
     try {
-      const response = await axios.post('/api/v1/playlists', { name, description });
+      const response = await apiClient.post(`/api/v1/playlists`, { name, description });
       setSuccessMessage(response.data.message);
       setTimeout(() => {
         setSuccessMessage('');
@@ -78,7 +79,7 @@ function CreatePlaylistDropdown({ videoId }) {
       const url = isChecked
         ? `/api/v1/playlists/add/${videoId}/${playlistId}`
         : `/api/v1/playlists/remove/${videoId}/${playlistId}`;
-      await axios.patch(url);
+      await apiClient.patch(url);
       setSuccessMessage(isChecked ? 'Video added to playlist successfully' : 'Video removed from playlist successfully');
       setTimeout(() => {
         setSuccessMessage('');

@@ -108,6 +108,8 @@ const getChannelStats = asyncHandler(async (req, res) => {
 const getChannelVideos = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   if (!channelId) throw new ApiError(404, "Channel ID is required");
+  console.log("Channel ID:", channelId);
+console.log("Converted ID:", new mongoose.Types.ObjectId(channelId));
 
   const videoPipeline = [
     { 
@@ -128,11 +130,17 @@ const getChannelVideos = asyncHandler(async (req, res) => {
       },
     },
     { $unwind: "$owner" },
-    { $addFields: { videoFile: "$videoFile", thumbnail: "$thumbnail" } },
   ];
 
+  const videos = await Video.find({
+  owner: new mongoose.Types.ObjectId(channelId),
+  isPublished: true
+}).populate("owner", "fullName username avatar");
+
+console.log(videos);
+
   try {
-    const allVideos = await Video.aggregate(videoPipeline);
+    const allVideos = videos
     return res
       .status(200)
       .json(new ApiResponse(200, allVideos, "Videos fetched successfully"));

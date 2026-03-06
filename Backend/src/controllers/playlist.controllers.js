@@ -69,7 +69,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                                         $project: {
                                             fullName: 1,
                                             _id: 1,
-                                            avatar: "$avatar.url",
+                                            avatar: "$avatar",
                                             username: 1
                                         },
                                     }
@@ -78,7 +78,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                         },
                         {
                             $addFields: {
-                                videoOwner: {
+                                owner: {
                                     $first: "$owner"
                                 }
                             }
@@ -91,13 +91,13 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
                         {
                             $addFields: {
-                                videoFile : "$videoFile.url",
+                                videoFile : "$videoFile",
                             }
                         },
 
                         {
                             $addFields: {
-                                thumbnail: "$thumbnail.url"
+                                thumbnail: "$thumbnail"
                             }
                         }
                     
@@ -116,7 +116,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                             $project: {
                                 fullName: 1,
                                 _id: 1,
-                                avatar: "$avatar.url",
+                                avatar: "$avatar",
                                 username: 1
                             },
                         }
@@ -301,24 +301,23 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
                             pipeline: [
                                 {
                                     $project: {
+                                        _id: 1,
                                         fullName: 1,
+                                        avatar: "$avatar",
                                         username: 1,
-                                        avatar: "$avatar"
-                                    }
+                                    },
                                 }
                             ]
                         }
                     },
                     {
                         $addFields: {
-                            videoOwner: {
-                                $first: "$owner"
-                            }
-                        }
+                            owner: {
+                                $first: "$owner",
+                            },
+                            },
                     },
-                    {
-                        $unset: "owner"
-                    },
+                   
                     {
                         $addFields: {
                             videoFile: "$videoFile",
@@ -340,6 +339,8 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
             }
         }
     ]);
+
+//    console.dir(playlistAggregate, { depth: null });
 
     if (!playlistAggregate || playlistAggregate.length === 0) throw new ApiError(404, "Playlists not found");
 

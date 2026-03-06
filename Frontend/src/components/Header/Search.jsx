@@ -3,6 +3,7 @@ import { IoSearchOutline } from 'react-icons/io5';
 import { useDispatch } from 'react-redux';
 import { setSearchResults } from '../../store/searchSlice';
 import useDebounce from '../utils/UseDebounce';
+import apiClient from '../utils/apiClient';
 
 function Search() {
   const dispatch = useDispatch();
@@ -11,6 +12,8 @@ function Search() {
   const debouncedQuery = useDebounce(searchQuery, 200);
 
   const apiKey = import.meta.env.VITE_APP_YOUTUBE_API_KEY;
+
+  const token = localStorage.getItem("accessToken");
 
 
   useEffect(() => {
@@ -21,12 +24,10 @@ function Search() {
 
     const fetchSuggestions = async () => {
       try {
-        const res = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-            debouncedQuery
-          )}&type=video&maxResults=5&key=${apiKey}`
-        );
-        const data = await res.json();
+        const res = await apiClient.get("/api/v1/youtube/search", {
+          params: { query: debouncedQuery },
+        });
+        const data = await res.data;
         setSuggestions(data.items || []);
       } catch (error) {
         console.error('Error fetching suggestions:', error);
@@ -42,12 +43,10 @@ function Search() {
     if (!searchQuery.trim()) return;
 
     try {
-      const searchRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-          searchQuery
-        )}&type=video&maxResults=10&key=${apiKey}`
-      );
-      const searchData = await searchRes.json();
+      const searchRes = await apiClient.get("/api/v1/youtube/search", {
+        params: { query: searchQuery }
+      });
+      const searchData = await searchRes.data;
       const items = searchData.items || [];
 
       const videoIds = items.map((item) => item.id.videoId).join(',');

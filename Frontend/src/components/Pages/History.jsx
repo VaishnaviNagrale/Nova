@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import VideoCard from '../Cards/VideoCard';
+import apiClient from '../utils/apiClient';
 
 function History() {
   const [watchHistory, setWatchHistory] = useState([]);
@@ -8,7 +9,7 @@ function History() {
   useEffect(() => {
     const fetchWatchHistory = async () => {
       try {
-        const res = await axios.get('/api/v1/users/history');
+        const res = await apiClient.get(`/api/v1/users/history`);
         setWatchHistory(res.data.data);
       } catch (error) {
         console.error('Error fetching watch history:', error);

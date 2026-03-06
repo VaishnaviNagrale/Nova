@@ -4,13 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { ColorRing } from 'react-loader-spinner';
 import { useSelector } from 'react-redux';
+import apiClient from '../utils/apiClient';
 
 function AllVideo() {
 
   const { videos, isSearched } = useSelector((state) => state.search);
 
   const fetchData = async () => {
-    const res = await axios.get('/api/v1/videos');
+    const res = await apiClient.get(`/api/v1/videos`);
     return res.data;
   };
 

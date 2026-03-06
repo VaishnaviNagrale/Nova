@@ -7,13 +7,17 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
     try {
         //console.log(req.cookies?.accessToken)
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+
+        // console.log("Cookies:", req.cookies);
+        // console.log("Header:", req.header("Authorization")); 
         
         //console.log(token);
         if (!token || typeof token !== 'string') {
             throw new ApiError(401, "Unauthorized request: Invalid token");
         }
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-        //console.log("pofjepf",decodedToken)
+        //console.log("pofjepf",decodedToken)   
+
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
     
         if (!user) {

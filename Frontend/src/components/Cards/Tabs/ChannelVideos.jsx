@@ -2,7 +2,7 @@ import React from 'react';
 import VideoCard from '../VideoCard';
 
 function ChannelVideos({ videos }) {
-
+  // console.log("Channel videos:", videos);
   return (
     <section className="mt-5">
       <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

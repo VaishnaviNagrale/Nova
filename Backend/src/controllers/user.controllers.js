@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { sendSecurityEmail } from "../utils/sendSecurityEmail.js"
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import fs from "fs";
@@ -120,21 +121,44 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exist");
   }
 
+  if (user.lockUntil && user.lockUntil > Date.now()) {
+      user.loginAttempts = 0;
+      user.lockUntil = undefined;
+      await user.save();
+      throw new ApiError(423, "Account temporarily locked. Try again later.");
+  }
+
   const isPasswordValid = await user.isPasswordCorrect(password);
+
   if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid user credentials");
+      user.loginAttempts += 1;
+
+      if (user.loginAttempts >= 5 && !user.lockUntil) {
+          user.lockUntil = Date.now() + 15 * 60 * 1000; // 15 mins
+
+          await sendSecurityEmail(user.email); // notify once
+      }
+
+      await user.save();
+      throw new ApiError(401, "Invalid user credentials");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
+
+  user.loginAttempts = 0;
+  user.lockUntil = undefined;
+  await user.save();
+
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "none",
   };
 
   return res
@@ -175,7 +199,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     //console.log(user)
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: false,
+      sameSite: "none",
     };
 
     return res
@@ -210,15 +235,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: false,
+      sameSite: "none",
     };
-    const { accessToken, newRefreshToken } =
+    const { accessToken, refreshToken } =
       await generateAccessAndRefreshTokens(user._id);
 
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new ApiResponse(
           200,
@@ -247,7 +273,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   if (!isPasswordCorrect) throw new ApiError(401, "Wrong password entered");
 
   user.password = newPassword;
-  await user.save({ validityBeforeSave: false });
+  await user.save({ validateBeforeSave: false });
   return res
     .status(200)
     .json(
@@ -296,7 +322,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 const updateUserAvatarImage = asyncHandler(async (req, res) => {
   // Validate existing avatar URL
-  const { url } = req.user?.avatar || {};
+  const  url  = req.user?.avatar || {};
   if (!url) {
     throw new ApiError(404, "Current avatar URL not found");
   }
@@ -309,6 +335,7 @@ const updateUserAvatarImage = asyncHandler(async (req, res) => {
 
   // Upload new avatar to Cloudinary
   const avatar = await uploadOnCloudinary(avatarImageLocalPath);
+  console.log(avatar)
   if (!avatar?.url) {
     throw new ApiError(500, "Server Error while uploading image on Cloudinary");
   }
@@ -316,20 +343,20 @@ const updateUserAvatarImage = asyncHandler(async (req, res) => {
   // Update user avatar in the database
   const user = await User.findByIdAndUpdate(
     req.user?._id,
-    { avatar: avatar?.secure_url || avatar?.url },
+    { avatar: avatar.secure_url || avatar.url },
     { new: true }
   ).select("-password");
 
   // Handle user not found
   if (!user) {
-    await deleteOnCloudinary(avatar?.url); // Rollback upload if user not found
+    await deleteOnCloudinary(avatar.url); // Rollback upload if user not found
     throw new ApiError(404, "User not found");
   }
 
   // Delete the old avatar from Cloudinary
-  if (url) {
+  if (url.public_id) {
     try {
-      await deleteOnCloudinary(url);
+      await deleteOnCloudinary(url.public_id);
     } catch (error) {
       console.log(`Failed to delete old image from Cloudinary: ${error}`);
       throw new ApiError(500, `Failed to delete old image: ${error.message}`);
@@ -345,10 +372,10 @@ const updateUserAvatarImage = asyncHandler(async (req, res) => {
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   // Validate existing cover image URL
-  const { publicId, url } = req.user?.coverImage || {};
-  if (!url) {
-    throw new ApiError(404, "Current cover image URL not found");
-  }
+  const url  = req.user?.coverImage || {};
+  // if (!url) {
+  //   throw new ApiError(404, "Current cover image URL not found");
+  // }
 
   // Validate uploaded cover image file
   const coverImageLocalPath = req.file?.path;
@@ -376,9 +403,9 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   }
 
   // Delete the old cover image from Cloudinary
-  if (url) {
+  if (url?.public_id) {
     try {
-      await deleteOnCloudinary(url, publicId);
+      await deleteOnCloudinary(url.public_id);
     } catch (error) {
       console.log(`Failed to delete old image from Cloudinary: ${error}`);
       throw new ApiError(500, `Failed to delete old image: ${error.message}`);
@@ -396,6 +423,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
   // console.log(username)
   if (!username?.trim()) throw new ApiError(404, "User or channel not found");
+  const userId = new mongoose.Types.ObjectId(req.user?._id);
   const channel = await User.aggregate([
     {
       $match: {
@@ -432,7 +460,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         isSubscribe: {
           $cond: {
-            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            if: { $in: [userId, "$subscribers.subscriber"] },
             then: true,
             else: false,
           },
@@ -448,11 +476,12 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         isSubscribe: 1,
         subscriberCount: 1,
         channelsSubscribedToCount: 1,
-        avatar: "$avatar.url",
-        coverImage: "$coverImage.url",
+        avatar: "$avatar",
+        coverImage: "$coverImage",
       },
     },
   ]);
+
 
   // console.log("channel :: ", channel);
   if (!channel?.length) throw new ApiError("404", "channel doesn't exist");

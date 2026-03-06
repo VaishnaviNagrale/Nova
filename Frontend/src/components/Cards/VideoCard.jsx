@@ -14,7 +14,7 @@ const VideoCard = ({
 }) => {
   const videoRef = useRef(null);
   const navigate = useNavigate();
-
+  // console.log("Destructured video props:", description)
   const videoLink = isYouTube
     ? `https://www.youtube.com/watch?v=${_id}`
     : `/video/${_id}`;
