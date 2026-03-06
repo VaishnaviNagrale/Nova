@@ -2,6 +2,9 @@ import express from "express" // this is used to create the server
 import cors from "cors" // this is used to allow the frontend to access the backend
 import cookieparser from "cookie-parser" // this is used to parse the cookies
 import helmet from "helmet";
+import { errorHandler } from "./utils/errorHandler.js";
+import morgan from "morgan";
+import logger from "./utils/logger.js";
 
 //app decleration
 const app = express()
@@ -28,6 +31,15 @@ app.use(express.static("public"))
 // this is used to parse the cookies
 app.use(cookieparser())
 
+app.use(errorHandler);
+
+app.use(
+  morgan("combined", {
+    stream: {
+      write: (message) => logger.info(message.trim())
+    }
+  })
+);
 
 // import all router
 import userRouter from "./routes/user.routes.js"

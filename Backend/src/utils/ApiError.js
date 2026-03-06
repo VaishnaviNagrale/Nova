@@ -1,24 +1,23 @@
-// This file is used to create a custom error class that will be used to handle errors in the application.
-class ApiError extends Error{
-    constructor(
-        statusCode,
-        message= "Something went wrong",
-        errors = [],
-        statck = ""
-    ){
-        super(message)
-        this.statusCode = statusCode
-        this.data = null
-        this.message = message
-        this.success = false
-        this.errors = errors
+class ApiError extends Error {
+  constructor(
+    statusCode,
+    message = "Something went wrong",
+    errors = [],
+    stack = ""
+  ) {
+    super(message);
 
-        if (statck) {
-            this.statck = statck
-        }else{
-            Error.captureStackTrace(this,this.constructor)
-        }
+    this.statusCode = statusCode;
+    this.data = null;
+    this.success = false;
+    this.errors = errors;
+
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
     }
+  }
 }
 
-export {ApiError}
+export { ApiError };
